@@ -1,17 +1,60 @@
-require './board'
-require './player'
+require_relative 'board'
+require_relative 'player'
+require_relative 'display'
 # Game logic
-def initialize_player(count, symbol)
-  print "Please enter the #{count} player's name: "
-  name = gets.chomp
-  Player.new(name, symbol)
+class Game
+  include Display
+  attr_reader :board, :player_one, :player_two, :current_player, :state
+
+  def initialize
+    @board = Board.new
+    @player_one = create_player('first', 'X')
+    @player_two = create_player('second', 'O')
+    @current_player = @player_one
+    @state = true
+  end
+
+  def create_player(current, symbol)
+    enter_name(current)
+    name = gets.chomp
+    Player.new(name, symbol)
+  end
+
+  def switch_current_player
+    current_player == player_one ? player_two : player_one
+  end
+
+  def valid_move?(move)
+    (move =~ /^-?[0-8]+$/) && Integer(move).between?(0, 8) && (@board.board_array[Integer(move)].is_a? Integer) ? true : false
+  end
+
+  def move_input(player)
+    until valid_move?(player.move)
+      select_cell(player.name)
+      player.move = gets.chomp
+    end
+    player.move = Integer(player.move)
+  end
+
+  def play
+    while state
+      board.display
+      move_input(@current_player)
+      board.update_values(@current_player.move, @current_player.symbol)
+      game_finish?
+      @current_player = switch_current_player
+    end
+  end
+
+  def game_finish?
+    if board.full_board?
+      board.display
+      game_over_board_full
+      @state = false
+    elsif board.game_over?
+      board.display
+      game_over_winner(current_player.name)
+      @state = false
+    end
+  end
 end
-
-board = Board.new
-
-player_one = initialize_player('first', 'X')
-player_two = initialize_player('second', 'O')
-
-player_one.move
-board.update_values(player_one.move[0], player_one.move[1], player_one.symbol)
-# board.display

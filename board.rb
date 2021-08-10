@@ -1,26 +1,37 @@
 # Board class is used to store the plays and display the board itself
 class Board
-  @board_array = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+  attr_reader :board_array
 
-  def display
-    @board_array.each_with_index do |row, row_index|
-      if row_index.zero?
-        print " -------------\n |"
-      else
-        print "\n -------------\n |"
-      end
-      row.each_with_index do |column, column_index|
-        if column_index.zero?
-          print " #{column} | "
-        else
-          print "#{column} | "
-        end
-      end
-      if row_index == 2 then print "\n -------------\n" end
-    end
+  WIN = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]].freeze
+
+  def initialize
+    @board_array = [0, 1, 2, 3, 4, 5, 6, 7, 8]
   end
 
-  def update_values(row, column, symbol)
-    @board_array[row][column] = symbol
+  def display
+    system('clear') || system('cls')
+    puts <<-HEREDOC
+    -------------
+    | #{board_array[0]} | #{board_array[1]} | #{board_array[2]} |
+    -------------
+    | #{board_array[3]} | #{board_array[4]} | #{board_array[5]} |
+    -------------
+    | #{board_array[6]} | #{board_array[7]} | #{board_array[8]} |
+    -------------
+    HEREDOC
+  end
+
+  def update_values(cell, symbol)
+    @board_array[cell] = symbol
+  end
+
+  def full_board?
+    @board_array.all? { |value| value.is_a? String }
+  end
+
+  def game_over?
+    WIN.any? do |combo|
+      [@board_array[combo[0]], @board_array[combo[1]], @board_array[combo[2]]].uniq.length == 1
+    end
   end
 end
